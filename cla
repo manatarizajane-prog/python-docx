@@ -1,0 +1,71 @@
+from docx import Document
+from docx.shared import Pt, RGBColor
+from docx.oxml import OxmlElement
+from docx.oxml.ns import qn
+
+# Create a new document
+doc = Document()
+
+# Add full name, course, and section at the top
+doc.add_paragraph("Full Name: ________________________\nCourse & Section: ________________________")
+
+# Add Title
+title = doc.add_paragraph()
+run = title.add_run("Grading Score Sheet for Outlines")
+run.font.name = "Arial Narrow"
+run.font.size = Pt(14)
+run.font.bold = True
+run.font.color.rgb = RGBColor(0, 0, 255)
+
+# Add spacing
+doc.add_paragraph("")
+
+# Create Table
+table = doc.add_table(rows=5, cols=3)
+table.style = "Table Grid"
+
+# Define headers
+headers = ["CATEGORIES", "POINTS POSSIBLE", "POINTS OFF"]
+header_cells = table.rows[0].cells
+for i, text in enumerate(headers):
+    cell = header_cells[i]
+    run = cell.paragraphs[0].add_run(text)
+    run.font.name = "Arial Narrow"
+    run.font.size = Pt(12)
+    run.font.bold = True
+    
+    # Set background color (light blue)
+    tc = cell._tc
+    tcPr = tc.get_or_add_tcPr()
+    shd = OxmlElement('w:shd')
+    shd.set(qn('w:fill'), "ADD8E6")  # Light Blue
+    tcPr.append(shd)
+
+# Categories rows
+categories = [
+    "Thoroughness of outline (fulfills assignment, covers all the bases)",
+    "Logic of outline (ideas arranged logically, under the proper headings)",
+    "Format (Points were parallel, numbers and letters lined up)",
+    "TOTAL"
+]
+points = ["45", "45", "10", "100"]
+
+for i, cat in enumerate(categories):
+    row_cells = table.rows[i+1].cells
+    row_cells[0].text = cat
+    row_cells[1].text = points[i]
+    row_cells[2].text = ""
+    
+    for j in range(3):
+        for paragraph in row_cells[j].paragraphs:
+            for run in paragraph.runs:
+                run.font.name = "Arial Narrow"
+                run.font.size = Pt(12)
+                if i == 3:  # Last row bold
+                    run.font.bold = True
+
+# Save document
+file_path = "/mnt/data/Grading_Score_Sheet.docx"
+doc.save(file_path)
+
+file_path
